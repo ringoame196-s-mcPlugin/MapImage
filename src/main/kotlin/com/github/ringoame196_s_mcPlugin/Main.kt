@@ -8,8 +8,13 @@ class Main : JavaPlugin() {
     private val plugin = this
     override fun onEnable() {
         super.onEnable()
+        if (!plugin.dataFolder.exists()) {
+            // プラグインのフォルダー作成
+            plugin.dataFolder.mkdirs()
+        }
+        saveResource("img.db",false) // db保存
         server.pluginManager.registerEvents(Events(), plugin)
         val command = getCommand("mapimage")
-        command!!.setExecutor(Command())
+        command!!.setExecutor(Command(plugin))
     }
 }

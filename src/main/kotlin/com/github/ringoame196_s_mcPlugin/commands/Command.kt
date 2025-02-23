@@ -9,8 +9,9 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
+import org.bukkit.plugin.Plugin
 
-class Command() : CommandExecutor, TabCompleter {
+class Command(private val plugin: Plugin) : CommandExecutor, TabCompleter {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (args.size < 2) return false
         if (sender !is Player) {
@@ -22,7 +23,7 @@ class Command() : CommandExecutor, TabCompleter {
         val playerLocation = imgMapManager.acquisitionBlockBeforeLookingAt(sender)?.clone() ?: return true
         val url = args[0]
         val cutCount = args[1].toIntOrNull() ?: return false
-        val imgManager = ImgManager(url)
+        val imgManager = ImgManager(url, plugin)
 
         val rightDirection = imgMapManager.acquisitionRightDirection(sender)
         val cutImgList = imgManager.splitImage(cutCount)
