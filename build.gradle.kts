@@ -14,8 +14,6 @@ plugins {
     id("org.jmailen.kotlinter") version "3.8.0"
 }
 
-val gitVersion: Closure<String> by extra
-
 val pluginVersion: String by project.ext
 
 repositories {
@@ -30,6 +28,8 @@ configurations["implementation"].extendsFrom(shadowImplementation)
 dependencies {
     shadowImplementation(kotlin("stdlib"))
     compileOnly("org.spigotmc:spigot-api:$pluginVersion-R0.1-SNAPSHOT")
+    val sqliteVersion = "3.46.1.0"
+    implementation("org.xerial:sqlite-jdbc:$sqliteVersion") // SQLLite
 }
 
 configure<BukkitPluginDescription> {
