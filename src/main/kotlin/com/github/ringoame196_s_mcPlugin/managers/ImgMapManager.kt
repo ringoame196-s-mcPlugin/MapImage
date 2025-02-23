@@ -2,6 +2,11 @@ package com.github.ringoame196_s_mcPlugin.managers
 
 import com.github.ringoame196_s_mcPlugin.Data
 import com.github.ringoame196_s_mcPlugin.ImageRenderer
+import com.github.ringoame196_s_mcPlugin.directions.Direction
+import com.github.ringoame196_s_mcPlugin.directions.East
+import com.github.ringoame196_s_mcPlugin.directions.North
+import com.github.ringoame196_s_mcPlugin.directions.South
+import com.github.ringoame196_s_mcPlugin.directions.West
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
@@ -12,12 +17,12 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.map.MapView
 import org.bukkit.util.BlockIterator
+import java.awt.image.BufferedImage
 
 class ImgMapManager() {
-    fun place(player: Player, url: String): Boolean {
-        val location = acquisitionBlockBeforeLookingAt(player) ?: return true
+    fun place(location: Location, img: BufferedImage): Boolean {
         val itemFrame = summonItemFrame(location) ?: return false
-        val mapItem = makeMap(location.world ?: return false, url)
+        val mapItem = makeMap(location.world ?: return false, img)
         itemFrame.setItem(mapItem)
         return true
     }
@@ -36,7 +41,7 @@ class ImgMapManager() {
         return itemFrame
     }
 
-    private fun acquisitionBlockBeforeLookingAt(player: Player): Location? {
+    fun acquisitionBlockBeforeLookingAt(player: Player): Location? {
         val blockIterator = BlockIterator(player, 5) // 最大5ブロック先まで視線を追跡
         var lastBlock: org.bukkit.block.Block? = null
 
@@ -50,23 +55,34 @@ class ImgMapManager() {
         return null // 見ているブロックが空気なら null
     }
 
-    private fun makeMap(world: World, url: String): ItemStack {
+    fun acquisitionRightDirection(player: Player): Direction {
+        // プレイヤーの向いている方向 (yaw) を取得
+        val yaw = (player.location.yaw + 360) % 360 // 負の値を防ぐため 360 を足してから 360 で割る
+
+        return when (yaw) {
+            in 45.0..135.0 -> North() // 向いているのが西なら右は北
+            in 135.0..225.0 -> East() // 向いているのが北なら右は東
+            in 225.0..315.0 -> South() // 向いているのが東なら右は南
+            else -> West() // 向いているのが南なら右は西
+        }
+    }
+
+    private fun makeMap(world: World, img: BufferedImage): ItemStack {
         val map = ItemStack(Material.FILLED_MAP)
         val meta = map.itemMeta as MapMeta
         var mapView = Bukkit.createMap(world)
         mapView = pasteMap(mapView)
-        mapView = pasteImage(mapView, url)
-        meta.setDisplayName("画像データ")
+        mapView = pasteImage(mapView, img)
         meta.mapView = mapView
         map.itemMeta = meta
         return map
     }
 
-    private fun pasteImage(mapView: MapView, url: String): MapView {
-        val downLoadImage = imgMapManager.downloadImage(url)
-        mapView.addRenderer(ImageRenderer(downLoadImage))
+    private fun pasteImage(mapView: MapView, img: BufferedImage): MapView {
+        mapView.addRenderer(ImageRenderer(img))
         return mapView
     }
+
     private fun pasteMap(mapView: MapView): MapView {
         mapView.renderers.clear()
         mapView.scale = MapView.Scale.FARTHEST
