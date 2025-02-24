@@ -110,16 +110,22 @@ class ImgMapManager() {
         return mapView
     }
 
-    fun delete(itemFrameUUID: String, plugin: Plugin) {
+    fun delete(itemFrameUUID: String, plugin: Plugin): Boolean {
         val group = imgDataBaseManager.acquisitionGroup(itemFrameUUID)
         val imgDataList = imgDataBaseManager.acquisitionGroupItemFrames(group)
         deleteItemFrame(imgDataList)
-        imgDataBaseManager.deleteGroupData(group)
-        deleteImg(group, plugin)
+        val deleteGroupData = imgDataBaseManager.deleteGroupData(group, plugin)
+        val deleteImg = deleteImg(group, plugin)
+        return deleteGroupData || deleteImg
     }
 
-    fun deleteImg(groupID: String, plugin: Plugin) {
+    fun deleteImg(groupID: String, plugin: Plugin): Boolean {
         val imgGroupFolder = File("${plugin.dataFolder}/img/$groupID")
-        if (imgGroupFolder.exists()) imgGroupFolder.deleteRecursively()
+        if (imgGroupFolder.exists()) {
+            val deleteGroupData = imgGroupFolder.deleteRecursively()
+            if (!deleteGroupData) plugin.logger.info("正常に画像削除できませんでした")
+            return deleteGroupData
+        }
+        return true
     }
 }

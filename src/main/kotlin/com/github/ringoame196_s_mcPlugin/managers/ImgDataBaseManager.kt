@@ -23,8 +23,14 @@ class ImgDataBaseManager {
         return dataBaseManager.acquisitionImgDataValue(sql)
     }
 
-    fun deleteGroupData(group: String) {
+    fun deleteGroupData(group: String, plugin: org.bukkit.plugin.Plugin): Boolean {
         val sql = "DELETE FROM ${Data.TABLE_NAME} WHERE ${Data.GROUP_KEY} = ?;"
-        dataBaseManager.executeUpdate(sql, mutableListOf(group))
+        try {
+            dataBaseManager.executeUpdate(sql, mutableListOf(group))
+            return true
+        } catch (e: Exception) {
+            plugin.logger.info(e.message)
+            return false
+        }
     }
 }

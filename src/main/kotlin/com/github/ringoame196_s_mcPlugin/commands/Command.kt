@@ -5,6 +5,7 @@ import com.github.ringoame196_s_mcPlugin.managers.ImgMapManager
 import com.github.ringoame196_s_mcPlugin.managers.MapManager
 import org.bukkit.ChatColor
 import org.bukkit.Material
+import org.bukkit.Sound
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
@@ -58,9 +59,9 @@ class Command(private val plugin: Plugin) : CommandExecutor, TabCompleter {
                 imgMapManager.setImg(cutImg, mapID)
                 imgManager.saveImg(cutImg, c.toString())
                 imgManager.saveImgInfoDB(mapID, c.toString(), itemFrame?.uniqueId.toString())
+                c ++
             }
             rightDirection.addition(placeLocation, 1)
-            c ++
             i ++
             if (i == cutCount) {
                 i = 0
@@ -68,12 +69,21 @@ class Command(private val plugin: Plugin) : CommandExecutor, TabCompleter {
                 rightDirection.reset(placeLocation, cutCount)
             }
         }
+        val message = "${ChatColor.GOLD}${c}枚の画像貼り付け完了"
+        val sound = Sound.BLOCK_ANVIL_USE
+        sender.sendMessage(message)
+        sender.playSound(sender, sound, 1f, 1f)
+
         return true
     }
 
     private fun deleteCommand(sender: Player): Boolean {
         val itemFrame = imgMapManager.acquisitionItemFrame(sender) ?: return true
-        imgMapManager.delete(itemFrame.uniqueId.toString(), plugin)
+        val run = imgMapManager.delete(itemFrame.uniqueId.toString(), plugin)
+        val message = if (run) "${ChatColor.RED}画像削除が正常に完了しました" else "${ChatColor.RED}画像削除中にエラーが発生しました"
+        val sound = Sound.BLOCK_ANVIL_USE
+        sender.sendMessage(message)
+        sender.playSound(sender, sound, 1f, 1f)
         return true
     }
 
