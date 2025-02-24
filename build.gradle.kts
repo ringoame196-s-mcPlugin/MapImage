@@ -43,8 +43,15 @@ configure<BukkitPluginDescription> {
         register("mapimage") {
             description = "MapImageプラグインのコマンド"
             aliases = listOf("mimg")
-            permission = "op"
+            permission = "mapImage.make"
             usage = "/mapimage <make delete> [<画像URL>] [<横幅>]"
+        }
+    }
+
+    permissions {
+        register("mapImage.make") {
+            description = "画像生成を貼り付けることができる権限"
+            default = BukkitPluginDescription.Permission.Default.OP
         }
     }
 }
