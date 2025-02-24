@@ -1,5 +1,6 @@
 package com.github.ringoame196_s_mcPlugin.managers
 
+import com.github.ringoame196_s_mcPlugin.datas.ImgData
 import org.bukkit.plugin.Plugin
 import java.awt.image.BufferedImage
 import java.io.File
@@ -8,7 +9,8 @@ import java.util.UUID
 import javax.imageio.ImageIO
 
 class ImgManager(downloadURL: String, private val plugin: Plugin) {
-    private val imgID = UUID.randomUUID()
+    private val imgDataBaseManager = ImgDataBaseManager()
+    private val groupID = UUID.randomUUID().toString()
     private val img: BufferedImage? = try {
         ImageIO.read(URL(downloadURL))
     } catch (e: Exception) {
@@ -16,13 +18,19 @@ class ImgManager(downloadURL: String, private val plugin: Plugin) {
         null
     }
 
-    private fun saveImg(img: BufferedImage, id: String) {
+    fun saveImg(img: BufferedImage, id: String): String {
         val imgFolder = File(plugin.dataFolder, "img")
         if (!imgFolder.exists()) imgFolder.mkdirs()
-        val imgGroup = File("${imgFolder.path}/$imgID")
+        val imgGroup = File("${imgFolder.path}/$groupID")
         if (!imgGroup.exists()) imgGroup.mkdirs()
         val path = File(imgGroup, id)
         ImageIO.write(img, "PNG", path)
+        return path.toString()
+    }
+
+    fun saveImgInfoDB(mapID: Int, imgPath: String, itemFrameUUID: String) {
+        val imgData = ImgData(mapID, groupID, imgPath, itemFrameUUID)
+        imgDataBaseManager.saveImg(imgData)
     }
 
     fun acquisitionWidth(): Int {
@@ -54,9 +62,7 @@ class ImgManager(downloadURL: String, private val plugin: Plugin) {
                 val x = j * partWidth
                 val y = i * partHeight
                 val croppedImage = img.getSubimage(x, y, partWidth, partHeight)
-
                 imgList.add(adjustmentSize(croppedImage))
-                saveImg(croppedImage, "$i$j")
             }
         }
         return imgList

@@ -1,7 +1,8 @@
 package com.github.ringoame196_s_mcPlugin.managers
 
-import com.github.ringoame196_s_mcPlugin.Data
 import com.github.ringoame196_s_mcPlugin.ImageRenderer
+import com.github.ringoame196_s_mcPlugin.datas.Data
+import com.github.ringoame196_s_mcPlugin.datas.ImgData
 import com.github.ringoame196_s_mcPlugin.directions.Direction
 import com.github.ringoame196_s_mcPlugin.directions.East
 import com.github.ringoame196_s_mcPlugin.directions.North
@@ -10,35 +11,53 @@ import com.github.ringoame196_s_mcPlugin.directions.West
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
-import org.bukkit.World
 import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.map.MapView
+import org.bukkit.plugin.Plugin
 import org.bukkit.util.BlockIterator
 import java.awt.image.BufferedImage
+import java.io.File
+import java.util.UUID
 
 class ImgMapManager() {
-    fun place(location: Location, img: BufferedImage): Boolean {
-        val itemFrame = summonItemFrame(location) ?: return false
-        val mapItem = makeMap(location.world ?: return false, img)
-        itemFrame.setItem(mapItem)
-        return true
-    }
+    private val mapManager = MapManager()
+    private val imgDataBaseManager = ImgDataBaseManager()
 
-    private fun summonItemFrame(location: Location): ItemFrame? {
+    fun summonItemFrame(location: Location, mapID: Int): ItemFrame? {
         val world = location.world
+        val map = mapManager.acquisitionMap(mapID)
         // 額縁召喚
         val itemFrame: ItemFrame? = world?.spawn(location, ItemFrame::class.java)
         itemFrame?.let {
-            // it.isVisible = false // 可視化するかどうか
+            it.isVisible = false // 可視化するかどうか
             it.isInvulnerable = true
             it.isCustomNameVisible = true
             it.setGravity(false)
             it.scoreboardTags.add(Data.IMG_ITEM_FRAME_TAG)
         }
+        itemFrame?.setItem(map)
         return itemFrame
+    }
+
+    fun deleteItemFrame(imgDataList: List<ImgData>) {
+        for (imgData in imgDataList) {
+            val itemFrame = Bukkit.getEntity(UUID.fromString(imgData.itemFrameUUID)) ?: continue
+            itemFrame.remove()
+        }
+    }
+
+    fun setImg(img: BufferedImage, mapID: Int) {
+        var mapView = Bukkit.getMap(mapID) ?: return // マップIDからMapViewを取得
+        val mapItem = ItemStack(Material.FILLED_MAP) // マップアイテムを作成
+        val meta = mapItem.itemMeta as? MapMeta ?: return // MapMetaを取得
+
+        mapView = pasteMap(mapView)
+        mapView = pasteImage(mapView, img)
+        meta.mapView = mapView
+        mapItem.itemMeta = meta
     }
 
     fun acquisitionBlockBeforeLookingAt(player: Player): Location? {
@@ -67,15 +86,17 @@ class ImgMapManager() {
         }
     }
 
-    private fun makeMap(world: World, img: BufferedImage): ItemStack {
-        val map = ItemStack(Material.FILLED_MAP)
-        val meta = map.itemMeta as MapMeta
-        var mapView = Bukkit.createMap(world)
-        mapView = pasteMap(mapView)
-        mapView = pasteImage(mapView, img)
-        meta.mapView = mapView
-        map.itemMeta = meta
-        return map
+    fun acquisitionItemFrame(player: Player): ItemFrame? {
+        val maxDistance = 5.0 // 検出範囲 (ブロック単位)
+
+        val result = player.world.rayTraceEntities(
+            player.eyeLocation, // プレイヤーの視点位置
+            player.location.direction, // プレイヤーの向いている方向
+            maxDistance, // 最大距離
+            { it is ItemFrame } // 額縁のみ対象
+        )
+
+        return result?.hitEntity as? ItemFrame
     }
 
     private fun pasteImage(mapView: MapView, img: BufferedImage): MapView {
@@ -87,5 +108,18 @@ class ImgMapManager() {
         mapView.renderers.clear()
         mapView.scale = MapView.Scale.FARTHEST
         return mapView
+    }
+
+    fun delete(itemFrameUUID: String, plugin: Plugin) {
+        val group = imgDataBaseManager.acquisitionGroup(itemFrameUUID)
+        val imgDataList = imgDataBaseManager.acquisitionGroupItemFrames(group)
+        deleteItemFrame(imgDataList)
+        imgDataBaseManager.deleteGroupData(group)
+        deleteImg(group, plugin)
+    }
+
+    fun deleteImg(groupID: String, plugin: Plugin) {
+        val imgGroupFolder = File("${plugin.dataFolder}/img/$groupID")
+        if (imgGroupFolder.exists()) imgGroupFolder.deleteRecursively()
     }
 }
