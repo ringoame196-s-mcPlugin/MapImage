@@ -90,8 +90,14 @@ class Command(private val plugin: Plugin) : CommandExecutor, TabCompleter {
     override fun onTabComplete(commandSender: CommandSender, command: Command, label: String, args: Array<out String>): MutableList<String>? {
         return when (args.size) {
             1 -> mutableListOf(CommandConst.MAKE_COMMAND, CommandConst.DELETE_COMMAND)
-            2 -> mutableListOf("[画像のURL]")
-            3 -> mutableListOf("[横幅]")
+            2 -> when (args[0]) {
+                CommandConst.MAKE_COMMAND -> mutableListOf("[画像のURL]")
+                else -> mutableListOf()
+            }
+            3 -> when (args[0]) {
+                CommandConst.MAKE_COMMAND -> mutableListOf("[横幅]")
+                else -> mutableListOf()
+            }
             else -> mutableListOf()
         }
     }
