@@ -8,11 +8,11 @@ import java.net.URL
 import java.util.UUID
 import javax.imageio.ImageIO
 
-class ImgManager(downloadURL: String, private val plugin: Plugin) {
+class ImgManager(downloadURL: URL, private val plugin: Plugin) {
     private val imgDataBaseManager = ImgDataBaseManager()
     private val groupID = UUID.randomUUID().toString()
     private val img: BufferedImage? = try {
-        ImageIO.read(URL(downloadURL))
+        ImageIO.read(downloadURL)
     } catch (e: Exception) {
         e.printStackTrace()
         null

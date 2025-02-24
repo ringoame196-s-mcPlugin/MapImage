@@ -12,6 +12,8 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
+import java.net.MalformedURLException
+import java.net.URL
 
 class Command(private val plugin: Plugin) : CommandExecutor, TabCompleter {
     private val mapManager = MapManager()
@@ -41,7 +43,7 @@ class Command(private val plugin: Plugin) : CommandExecutor, TabCompleter {
     private fun makeCommand(sender: Player, args: Array<out String>): Boolean {
         if (args.size < 3) return false
         val playerLocation = imgMapManager.acquisitionBlockBeforeLookingAt(sender)?.clone() ?: return true
-        val url = args[1]
+        val url = try { URL(args[1]) } catch (e: MalformedURLException) { return false }
         val cutCount = args[2].toIntOrNull() ?: return false
         val imgManager = ImgManager(url, plugin)
 
@@ -78,9 +80,14 @@ class Command(private val plugin: Plugin) : CommandExecutor, TabCompleter {
     }
 
     private fun deleteCommand(sender: Player): Boolean {
-        val itemFrame = imgMapManager.acquisitionItemFrame(sender) ?: return true
+        val itemFrame = imgMapManager.acquisitionItemFrame(sender)
+        if (itemFrame == null) {
+            val message = "${ChatColor.RED}額縁の取得に失敗しました"
+            sender.sendMessage(message)
+            return true
+        }
         val run = imgMapManager.delete(itemFrame.uniqueId.toString(), plugin)
-        val message = if (run) "${ChatColor.RED}画像削除が正常に完了しました" else "${ChatColor.RED}画像削除中にエラーが発生しました"
+        val message = if (run) "${ChatColor.RED}画像削除が正常に完了しました" else "${ChatColor.DARK_RED}画像削除中にエラーが発生しました"
         val sound = Sound.BLOCK_ANVIL_USE
         sender.sendMessage(message)
         sender.playSound(sender, sound, 1f, 1f)
