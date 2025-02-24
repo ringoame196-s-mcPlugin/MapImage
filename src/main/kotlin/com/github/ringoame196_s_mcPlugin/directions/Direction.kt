@@ -5,5 +5,4 @@ import org.bukkit.Location
 interface Direction {
     fun addition(location: Location, changeValue: Int)
     fun reset(location: Location, changeValue: Int)
-    fun checkBlock(location: Location): Boolean
 }

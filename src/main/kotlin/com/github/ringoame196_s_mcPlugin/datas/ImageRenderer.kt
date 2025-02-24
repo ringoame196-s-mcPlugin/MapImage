@@ -1,4 +1,4 @@
-package com.github.ringoame196_s_mcPlugin
+package com.github.ringoame196_s_mcPlugin.datas
 
 import org.bukkit.entity.Player
 import org.bukkit.map.MapCanvas

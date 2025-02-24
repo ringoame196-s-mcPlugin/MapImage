@@ -23,6 +23,11 @@ class ImgDataBaseManager {
         return dataBaseManager.acquisitionImgDataValue(sql)
     }
 
+    fun acquisitionImgDataList(): List<ImgData> {
+        val sql = "SELECT * FROM ${Data.TABLE_NAME};"
+        return dataBaseManager.acquisitionImgDataValue(sql)
+    }
+
     fun deleteGroupData(group: String, plugin: org.bukkit.plugin.Plugin): Boolean {
         val sql = "DELETE FROM ${Data.TABLE_NAME} WHERE ${Data.GROUP_KEY} = ?;"
         try {

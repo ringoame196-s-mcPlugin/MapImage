@@ -1,7 +1,7 @@
 package com.github.ringoame196_s_mcPlugin.managers
 
-import com.github.ringoame196_s_mcPlugin.ImageRenderer
 import com.github.ringoame196_s_mcPlugin.datas.Data
+import com.github.ringoame196_s_mcPlugin.datas.ImageRenderer
 import com.github.ringoame196_s_mcPlugin.datas.ImgData
 import com.github.ringoame196_s_mcPlugin.directions.Direction
 import com.github.ringoame196_s_mcPlugin.directions.East
@@ -21,10 +21,23 @@ import org.bukkit.util.BlockIterator
 import java.awt.image.BufferedImage
 import java.io.File
 import java.util.UUID
+import javax.imageio.ImageIO
 
 class ImgMapManager() {
     private val mapManager = MapManager()
     private val imgDataBaseManager = ImgDataBaseManager()
+
+    fun loadImg(plugin: Plugin) {
+        val imgDataList = imgDataBaseManager.acquisitionImgDataList()
+
+        for (imgData in imgDataList) {
+            val mapID = imgData.mapID
+            val imgFile = File("${plugin.dataFolder}/img/${imgData.groupID}/${imgData.imgPath}")
+            if (!imgFile.exists()) continue
+            val img = ImageIO.read(imgFile) ?: continue
+            setImg(img, mapID)
+        }
+    }
 
     fun summonItemFrame(location: Location, mapID: Int): ItemFrame? {
         val world = location.world

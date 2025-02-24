@@ -43,7 +43,7 @@ class Command(private val plugin: Plugin) : CommandExecutor, TabCompleter {
     private fun makeCommand(sender: Player, args: Array<out String>): Boolean {
         if (args.size < 3) return false
         val playerLocation = imgMapManager.acquisitionBlockBeforeLookingAt(sender)?.clone() ?: return true
-        val url = try { URL(args[1]) } catch (e: MalformedURLException) { return false }
+        val url = try { URL(args[1]) } catch (_: MalformedURLException) { return false }
         val cutCount = args[2].toIntOrNull() ?: return false
         val imgManager = ImgManager(url, plugin)
 
@@ -55,7 +55,7 @@ class Command(private val plugin: Plugin) : CommandExecutor, TabCompleter {
         var placeLocation = playerLocation
 
         for (cutImg in cutImgList) {
-            if (placeLocation.block.type == Material.AIR && rightDirection.checkBlock(placeLocation)) {
+            if (placeLocation.block.type == Material.AIR) {
                 val mapID = mapManager.issueNewMap()
                 val itemFrame = imgMapManager.summonItemFrame(placeLocation, mapID)
                 imgMapManager.setImg(cutImg, mapID)
