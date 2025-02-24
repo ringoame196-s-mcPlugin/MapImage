@@ -1,6 +1,8 @@
 package com.github.ringoame196_s_mcPlugin.datas
 
 object Data {
+    var max = 10
+
     const val IMG_ITEM_FRAME_TAG = "img_frame"
 
     // db

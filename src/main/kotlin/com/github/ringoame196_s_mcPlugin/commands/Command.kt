@@ -1,5 +1,6 @@
 package com.github.ringoame196_s_mcPlugin.commands
 
+import com.github.ringoame196_s_mcPlugin.datas.Data
 import com.github.ringoame196_s_mcPlugin.managers.ImgManager
 import com.github.ringoame196_s_mcPlugin.managers.ImgMapManager
 import com.github.ringoame196_s_mcPlugin.managers.MapManager
@@ -44,11 +45,18 @@ class Command(private val plugin: Plugin) : CommandExecutor, TabCompleter {
         if (args.size < 3) return false
         val playerLocation = imgMapManager.acquisitionBlockBeforeLookingAt(sender)?.clone() ?: return true
         val url = try { URL(args[1]) } catch (_: MalformedURLException) { return false }
-        val cutCount = args[2].toIntOrNull() ?: return false
+        val width = args[2].toIntOrNull() ?: return false
+
+        if (width > Data.max) {
+            val message = "${ChatColor.RED}横幅が長すぎます"
+            sender.sendMessage(message)
+            return true
+        }
+
         val imgManager = ImgManager(url, plugin)
 
         val rightDirection = imgMapManager.acquisitionRightDirection(sender)
-        val cutImgList = imgManager.splitImage(cutCount)
+        val cutImgList = imgManager.splitImage(width)
 
         var i = 0
         var c = 0
@@ -65,10 +73,10 @@ class Command(private val plugin: Plugin) : CommandExecutor, TabCompleter {
             }
             rightDirection.addition(placeLocation, 1)
             i ++
-            if (i == cutCount) {
+            if (i == width) {
                 i = 0
                 placeLocation.add(0.0, -1.0, 0.0)
-                rightDirection.reset(placeLocation, cutCount)
+                rightDirection.reset(placeLocation, width)
             }
         }
         val message = "${ChatColor.GOLD}${c}枚の画像貼り付け完了"

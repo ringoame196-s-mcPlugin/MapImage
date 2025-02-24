@@ -15,6 +15,8 @@ class Main : JavaPlugin() {
             // プラグインのフォルダー作成
             plugin.dataFolder.mkdirs()
         }
+        saveDefaultConfig() // config生成
+        Data.max = config.getInt("max")
         saveResource("img.db", false) // db保存
         Data.DB_PATH = "${plugin.dataFolder.path}/img.db"
 
