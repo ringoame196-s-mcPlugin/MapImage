@@ -49,7 +49,7 @@ configure<BukkitPluginDescription> {
     }
 
     permissions {
-        register("mapImage.make") {
+        register("mapImage.manager") {
             description = "画像生成を貼り付けることができる権限"
             default = BukkitPluginDescription.Permission.Default.OP
         }
