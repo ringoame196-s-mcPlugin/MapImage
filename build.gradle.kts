@@ -43,7 +43,7 @@ configure<BukkitPluginDescription> {
         register("mapimage") {
             description = "MapImageプラグインのコマンド"
             aliases = listOf("mimg")
-            permission = "mapImage.make"
+            permission = "mapImage.manager"
             usage = "/mapimage <make delete> [<画像URL>] [<横幅>]"
         }
     }
